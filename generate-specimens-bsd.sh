@@ -3,8 +3,8 @@
 # Script to generate UFS test files
 # Requires BSD with dd, mdconfig, bsdlabel and newfs
 
-EXIT_SUCCESS=0;
-EXIT_FAILURE=1;
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
 
 # Checks the availability of a binary and exits if not available.
 #
@@ -13,15 +13,15 @@ EXIT_FAILURE=1;
 #
 assert_availability_binary()
 {
-	local BINARY=$1;
+	local BINARY=$1
 
-	which ${BINARY} > /dev/null 2>&1;
-	if test $? -ne ${EXIT_SUCCESS};
+	which ${BINARY} > /dev/null 2>&1
+	if test $? -ne ${EXIT_SUCCESS}
 	then
-		echo "Missing binary: ${BINARY}";
-		echo "";
+		echo "Missing binary: ${BINARY}"
+		echo ""
 
-		exit ${EXIT_FAILURE};
+		exit ${EXIT_FAILURE}
 	fi
 }
 
@@ -32,7 +32,7 @@ assert_availability_binary()
 #
 create_test_file_entries()
 {
-	MOUNT_POINT=$1;
+	MOUNT_POINT=$1
 
 	# Create an empty file
 	touch ${MOUNT_POINT}/emptyfile
@@ -81,20 +81,20 @@ create_test_file_entries()
 #
 create_test_image_file()
 {
-	IMAGE_FILE=$1;
-	IMAGE_SIZE=$2;
-	SECTOR_SIZE=$3;
-	shift 3;
-	local ARGUMENTS=("$@");
+	IMAGE_FILE=$1
+	IMAGE_SIZE=$2
+	SECTOR_SIZE=$3
+	shift 3
+	local ARGUMENTS=("$@")
 
-	dd if=/dev/zero of=${IMAGE_FILE} bs=${SECTOR_SIZE} count=$(( ${IMAGE_SIZE} / ${SECTOR_SIZE} )) 2> /dev/null;
+	dd if=/dev/zero of=${IMAGE_FILE} bs=${SECTOR_SIZE} count=$(( ${IMAGE_SIZE} / ${SECTOR_SIZE} )) 2> /dev/null
 
-	mdconfig -a -t vnode -f ${IMAGE_FILE} -u 9;
+	mdconfig -a -t vnode -f ${IMAGE_FILE} -u 9
 
-	bsdlabel -w -B md9 auto;
+	bsdlabel -w -B md9 auto
 
-	echo "newfs ${ARGUMENTS[@]} md9a";
-	newfs ${ARGUMENTS[@]} md9a;
+	echo "newfs ${ARGUMENTS[@]} md9a"
+	newfs ${ARGUMENTS[@]} md9a
 }
 
 # Creates a test image file with file entries.
@@ -107,53 +107,53 @@ create_test_image_file()
 #
 create_test_image_file_with_file_entries()
 {
-	IMAGE_FILE=$1;
-	IMAGE_SIZE=$2;
-	SECTOR_SIZE=$3;
-	shift 3;
-	local ARGUMENTS=("$@");
+	IMAGE_FILE=$1
+	IMAGE_SIZE=$2
+	SECTOR_SIZE=$3
+	shift 3
+	local ARGUMENTS=("$@")
 
-	create_test_image_file ${IMAGE_FILE} ${IMAGE_SIZE} ${SECTOR_SIZE} ${ARGUMENTS[@]};
+	create_test_image_file ${IMAGE_FILE} ${IMAGE_SIZE} ${SECTOR_SIZE} ${ARGUMENTS[@]}
 
-	mount /dev/md9a ${MOUNT_POINT};
+	mount /dev/md9a ${MOUNT_POINT}
 
-	create_test_file_entries ${MOUNT_POINT};
+	create_test_file_entries ${MOUNT_POINT}
 
-	umount ${MOUNT_POINT};
+	umount ${MOUNT_POINT}
 
-	mdconfig -d -u 9;
+	mdconfig -d -u 9
 }
 
-assert_availability_binary bsdlabel;
-assert_availability_binary dd;
-assert_availability_binary mdconfig;
-assert_availability_binary newfs;
+assert_availability_binary bsdlabel
+assert_availability_binary dd
+assert_availability_binary mdconfig
+assert_availability_binary newfs
 
-SPECIMENS_PATH="specimens/newfs";
+SPECIMENS_PATH="specimens/newfs"
 
-if test -d ${SPECIMENS_PATH};
+if test -d ${SPECIMENS_PATH}
 then
-	echo "Specimens directory: ${SPECIMENS_PATH} already exists.";
+	echo "Specimens directory: ${SPECIMENS_PATH} already exists."
 
-	exit ${EXIT_FAILURE};
+	exit ${EXIT_FAILURE}
 fi
 
-mkdir -p ${SPECIMENS_PATH};
+mkdir -p ${SPECIMENS_PATH}
 
-set -e;
+set -e
 
-MOUNT_POINT="/mnt/ufs";
+MOUNT_POINT="/mnt/ufs"
 
-mkdir -p ${MOUNT_POINT};
+mkdir -p ${MOUNT_POINT}
 
-IMAGE_SIZE=$(( 4 * 1024 * 1024 ));
-SECTOR_SIZE=512;
+IMAGE_SIZE=$(( 4 * 1024 * 1024 ))
+SECTOR_SIZE=512
 
 # Create an UFS 1 file system
-create_test_image_file_with_file_entries "${SPECIMENS_PATH}/ufs1.raw" ${IMAGE_SIZE} ${SECTOR_SIZE} "-L ufs_test" "-O 1";
+create_test_image_file_with_file_entries "${SPECIMENS_PATH}/ufs1.raw" ${IMAGE_SIZE} ${SECTOR_SIZE} "-L ufs_test" "-O 1"
 
 # Create an UFS 2 file system
-create_test_image_file_with_file_entries "${SPECIMENS_PATH}/ufs2.raw" ${IMAGE_SIZE} ${SECTOR_SIZE} "-L ufs_test" "-O 2";
+create_test_image_file_with_file_entries "${SPECIMENS_PATH}/ufs2.raw" ${IMAGE_SIZE} ${SECTOR_SIZE} "-L ufs_test" "-O 2"
 
 # TODO: test image with journaling -J
 # TODO: test image with different block sizes -b 4096 - 32768
@@ -161,5 +161,4 @@ create_test_image_file_with_file_entries "${SPECIMENS_PATH}/ufs2.raw" ${IMAGE_SI
 # TODO: test image with different maximum extent size -m
 # TODO: test image with different fragment size -f
 
-exit ${EXIT_SUCCESS};
-
+exit ${EXIT_SUCCESS}
